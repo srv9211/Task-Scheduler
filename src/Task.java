@@ -2,8 +2,18 @@
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class Task {
+	public static boolean notAddedFeBacklog = true;
+	public static boolean notAddedQaBacklog = true;
+
+	
+	public static ArrayList<Integer> backlogBackend = new ArrayList();
+	public static ArrayList<Integer> backlogFrontend = new ArrayList();
+	public static ArrayList<Integer> backlogQuality = new ArrayList();
+	public static ArrayList<Integer> backlogSample = new ArrayList();
+
 	
 	// test map for previous work for backend which will never come to use
 	public static HashMap<Integer, Integer> testMap = new HashMap<>();
@@ -14,10 +24,10 @@ public class Task {
 	public static HashMap<Integer, Integer> qaHm = new HashMap<>();
 	
 	// pointer which will tell about which person is doing which task currently. Int not taken when passed to the function it doesn't change the value of static int
-	public static int[] beCurr = {0, 1}, feCurr = {0, 1}, qaCurr = {0, 1};
-	public static int[]  wholeBeCurr = {2}, wholeFeCurr = {1}, wholeQaCurr = {2}; // total be people
+	public static int[] beCurr = {0, 0}, feCurr = {0, 0}, qaCurr = {0, 0};
+	public static int[]  wholeBeCurr = {0}, wholeFeCurr = {0}, wholeQaCurr = {0}; // total be people
 	
-	public static int[] beWork = {1, 1, 2};
+	public static int[] beWork = {4, 2, 1};
 	public static int[] feWork = {1, 2, 2};
 	public static int[] qaWork = {1, 1, 1};
 	
@@ -31,15 +41,22 @@ public class Task {
 	// 2 -> Contact us
 																														
 	public static int[] beDates =  {1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0};
-	public static int[] be2Dates = {1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1};
-	public static int[] feDates =  {1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0};
+	public static int[] be2Dates = {1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1};
+	public static int[] feDates =  {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0};
+	public static int[] fe2Dates = {0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1};
 	public static int[] qaDates =  {0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1};
-	public static int[] qa2Dates = {0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1};
+	public static int[] qa2Dates =  {0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1};
+
 	
-	public static int[][] allbeDates = {beDates, be2Dates}, allfeDates = {feDates}, allqaDates = {qaDates, qa2Dates};
+	public static int[][] allbeDates = {beDates, be2Dates}, allfeDates = {feDates, fe2Dates}, allqaDates = {qaDates, qa2Dates};
 	
 	
-	public static String[][] output = new String[5][beDates.length]; // output
+	public static String[][] output = new String[6][beDates.length]; // output
+	
+	public static boolean[] beBusy = {false, false};
+	public static boolean[] feBusy = {false, false};
+	public static boolean[] qaBusy = {false, false};
+
 	
 	// methods
 	
@@ -76,6 +93,10 @@ public class Task {
 	// main
 	public static void main(String[] args) {
 		
+		backlogBackend.add(0);
+		backlogBackend.add(1);
+		backlogBackend.add(2);
+		
 //		0 is for Hero Banner
 //		1 is for Featured News
 //		2 is for Contact Us
@@ -86,95 +107,127 @@ public class Task {
 			for(int id=0; id<allbeDates.length; id++) {
 				boolean isBeDone = isBeDone(id);
 				
-				int erId = 0; 
-				if(id != 0) erId = 3; // erId for output
+				int outputId = 0; 
+				if(id != 0) outputId = 3; // erId for output
 				
 				if(!isBeDone) {
-					fillOutput( allbeDates[id], isBeDone, true /* because nothing previous */, testMap, beWork, beCurr, id, erId /* for FE outputArray */, beHm, i, wholeBeCurr);
+					
+					fillOutput( allbeDates[id], isBeDone, true /* because nothing previous */, testMap, beWork, beCurr,
+							id, outputId /* for FE outputArray */, beHm, i, wholeBeCurr, backlogBackend, backlogFrontend, beBusy);
 				}
-				else output[erId][i] = "Spare day     ";
+				else output[outputId][i] = "Spare day     ";
 			}
 			
 			for(int id=0; id<allfeDates.length; id++) {
 				boolean isFeDone = isFeDone(id);
 				
-				int erId = 1; 
-				if(id != 0) erId = 4; // erId for output
+				int outputId = 1; 
+				if(id != 0) outputId = 4; // erId for output
 				
-				if(!isFeDone) fillOutput( allfeDates[id], isFeDone, isBeTaskDone(feCurr[id]), beHm, feWork, feCurr, id, erId, feHm, i, wholeFeCurr);
-				else output[erId][i] = "Spare day     ";
+				if(backlogFrontend.size() != 0 && notAddedFeBacklog) {
+					notAddedFeBacklog = false;
+					Arrays.fill(feCurr, backlogFrontend.get(0));
+				}
+				
+				if(!isFeDone) {
+					fillOutput( allfeDates[id], isFeDone, isBeTaskDone(feCurr[id]), beHm, feWork, feCurr,
+							id, outputId, feHm, i, wholeFeCurr, backlogFrontend, backlogQuality, feBusy);
+				}
+				else {
+					output[outputId][i] = "Spare day     ";
+				}
 			}
-			
+//			
 			for(int id=0; id<allqaDates.length; id++) {
 				boolean isQaDone = isQaDone(id);
 				
 				int erId = 2; 
-				if(id != 0) erId = 4; // erId for output
+				if(id != 0) erId = 5; // erId for output
 				
-				if(!isQaDone) fillOutput( allqaDates[id], isQaDone, isFeTaskDone(qaCurr[id]), feHm, qaWork, qaCurr, id, erId, qaHm, i, wholeQaCurr);
+				if(backlogQuality.size() != 0 && notAddedQaBacklog) {
+					notAddedQaBacklog = false;
+					Arrays.fill(qaCurr, backlogQuality.get(0));
+				}
+				
+				if(!isQaDone) {
+					fillOutput( allqaDates[id], isQaDone, isFeTaskDone(qaCurr[id]), feHm, qaWork, qaCurr,
+							id, erId, qaHm, i, wholeQaCurr, backlogQuality, backlogSample, qaBusy);
+				}
 				else output[erId][i] = "Spare day     ";
 			}
-			
-
-//			boolean isBeDone = isBeDone();
-//			if(!isBeDone) fillOutput( beDates, isBeDone, true /* because nothing previous */, testMap, beWork, beCurr, 0, beHm, i);
-//			else output[0][i] = "Spare day     ";
-	
-////			 FE
-//			boolean isFeDone = isFeDone(0);
-//			if(!isFeDone) fillOutput( allfeDates[0], isFeDone, isBeTaskDone(feCurr[0]), beHm, feWork, feCurr, 0, 1, feHm, i, wholeFeCurr);
-//			else output[1][i] = "Spare day     ";
-//			
-//			isFeDone = isFeDone(1);
-//			if(!isFeDone) fillOutput( allfeDates[1], isFeDone, isBeTaskDone(feCurr[1]), beHm, feWork, feCurr, 1, 4, feHm, i, wholeFeCurr);
-//			else output[4][i] = "Spare day     ";
-
-//			 QA
-//			boolean isQaDone = isQaDone();
-//			if(!isQaDone) fillOutput(qaDates, isQaDone, isFeTaskDone(qaCurr[0]), feHm, qaWork, qaCurr, 0, 2, qaHm, i, wholeQaCurr);
-//			else output[2][i] = "Spare day     ";
 		}
+		
+		System.out.println(backlogQuality);
 
 		System.out.println("BE0: " + Arrays.toString(output[0]));
 		System.out.println("BE1: " + Arrays.toString(output[3]) + "\n");
-		System.out.println("FE0: " + Arrays.toString(output[1]) + "\n");
-		System.out.println("QA0: " + Arrays.toString(output[2]) + "\n");
-		System.out.println("QA2: " + Arrays.toString(output[4]));
+		
+//		System.out.println(Arrays.toString(beWork));
+//		System.out.println(backlogFrontend);
+		
+		System.out.println("FE0: " + Arrays.toString(output[1]));
+		System.out.println("FE1: " + Arrays.toString(output[4]) + "\n");
+		
+		System.out.println("QA0: " + Arrays.toString(output[2]));
+		System.out.println("QA1: " + Arrays.toString(output[5]) + "\n");
+
+//		
+//		for(int key : beHm.keySet()) {
+//			System.out.println(key + " " + beHm.get(key));
+//		}
 		
 	}
 	
 	public static void fillOutput( int[] erDates, boolean isErDone, boolean isPrevErDone, HashMap<Integer, Integer> prevErMap, int[] erWork, 
-			int[] erCurrTask, int id, int erId, HashMap<Integer, Integer> erMap, int i, int[] wholeErCurr) {
+			int[] erCurrTask, int id, int outputId, HashMap<Integer, Integer> erMap, int i, int[] wholeErCurr, ArrayList<Integer> backlog,
+			ArrayList<Integer> backlogOfNextEr, boolean[] erBusy) {
 		// ALL
-
+		
 		if(erDates[i] == 1) {
 			if(!isErDone) {
 				boolean isPrevWorkDoneButNotSameDay = false;
 				
-				if((erId == 0 || erId == 3) || (isPrevErDone && prevErMap.get(erCurrTask[id]) != i) ) isPrevWorkDoneButNotSameDay = true; // because of be, as it's not dependent on any other
+				if((outputId == 0 || outputId == 3) || (isPrevErDone && prevErMap.get(erCurrTask[id]) != i) ) {
+					isPrevWorkDoneButNotSameDay = true; // because of be, as it's not dependent on any other
+//					if(outputId==4) System.out.println(i + " " + isPrevWorkDoneButNotSameDay);
+				}
 				
 				if(isPrevWorkDoneButNotSameDay) {
-					if( erWork[erCurrTask[id]] != 0) {
-						String out = addOutput(erCurrTask[id]);
-						
-						output[erId][i] = out;						
-						erWork[erCurrTask[id]]--;						
-						if(erWork[erCurrTask[id]] == 0) {
-
-							erMap.put(erCurrTask[id], i);
-							erCurrTask[id] = wholeErCurr[0]++; // this is because to keep record where whole be task stand and helps individual be person
-//							erCurrTask[id]++;
+					if(!erBusy[id]) {
+						if(wholeErCurr[0]<backlog.size()) {
+							erCurrTask[id] = backlog.get(wholeErCurr[0]++); // wholecurr is the pointer which maintains pointer to backlog
+							erBusy[id] = true;
+							
+						} else {
+							output[outputId][i] = "Spare day     ";
+							return;
 						}
 					}
+					
+					String out = addOutput(erCurrTask[id]);
+					
+					
+					output[outputId][i] = out;						
+					erWork[erCurrTask[id]]--;						
+					if(erWork[erCurrTask[id]] == 0) {
+						backlogOfNextEr.add(erCurrTask[id]); // backlog addon for next engineer
+						
+						erMap.put(erCurrTask[id], i);
+						if(wholeErCurr[0] >= backlog.size()) {
+							erCurrTask[id] = wholeErCurr[0];
+						}
+						erBusy[id] = false;
+					}
 				} else {
-					output[erId][i] = "Spare day     ";
+//					System.out.print(i + " ");
+					output[outputId][i] = "Spare day     ";
 				}		
 			} else {
-				output[erId][i] = "Spare day     ";
+				output[outputId][i] = "Spare day     ";
 			}						
 		} else {
 			// leave 
-			output[erId][i] = "Not Avail     ";
+			output[outputId][i] = "Not Avail     ";
 		}
 		
 	} 
