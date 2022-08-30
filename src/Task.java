@@ -10,8 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class Task {
-	
-	// Indices are tasks
 	public static ArrayList<String> tasksName = new ArrayList();
 	
 	public static boolean notAddedFeBacklog = true;
@@ -26,7 +24,7 @@ public class Task {
 	
 	// pointer which will tell us about which person is doing which task currently. Integer not taken when passed to the function as it doesn't change the value of static Integer.
 	public static int[] backendCurrentTask , frontendCurrentTask , QACurrentTask;
-	public static int[]  wholeBeCurr = {0}, wholeFeCurr = {0}, wholeQaCurr = {0}; // total be people
+	public static int[]  backendSpecializationPosition = {0}, frontendSpecializationPosition = {0}, QASpecializationPosition = {0}; // total be people
 	
 	public static int[] backendWorkload;
 	public static int[] frontendWorkload;
@@ -104,10 +102,9 @@ public class Task {
 	
 	// MAIN===========================================================
 	public static void main(String[] args) {
-		// buffer input
-		readingInput();
-		
-		backendWorkload = new int[workloadSheet.size()-1];
+		readingInput();	// buffer input
+		// workload for each specialization. Every task is defined by index and stored in tasksName arrayList.
+		backendWorkload = new int[workloadSheet.size()-1]; 
 		frontendWorkload = new int[workloadSheet.size()-1];
 		QAWorkload = new int[workloadSheet.size()-1];
 		
@@ -137,7 +134,7 @@ public class Task {
 			}
 		}
 		catch(Exception e) {
-			System.err.println("Error in loading workloadsheet.");
+			System.err.println("Exception: \nError in loading the workloadsheet.");
 			System.err.println("Please provide the proper input in CSV format, null and negative values are not accepted.");
 			return;
 		}
@@ -198,7 +195,7 @@ public class Task {
 			}
 		}
 		catch(Exception e) {
-			System.err.println("Error in loading tasksheet.");
+			System.err.println("Exception: \nError in loading the tasksheet.");
 			System.err.println("Please provide the proper input in CSV format, null and negative values are not accepted.");
 			return;
 		}
@@ -246,14 +243,13 @@ public class Task {
 				
 				if(!isBeDone) {
 					fillOutput( backendPeopleDates.get(id), isBeDone, true /* because nothing previous */, backendTaskDoneOnDateMap, backendGarbageMap, 
-							backendWorkload, backendCurrentTask, id, outputId /* for FE outputArray */, date, wholeBeCurr, backlogBackend, 
+							backendWorkload, backendCurrentTask, id, outputId /* for FE outputArray */, date, backendSpecializationPosition, backlogBackend, 
 							backlogFrontend, isBackendBusy, true, output);
 				}
 				else output[outputId][date] += "Spare 8hr day";
 			}
-			
 			// For Front-end
-			for(int id=0; id<totalFrontendPeople; id++) {
+			for(int id=0; id<totalFrontendPeople; id++) { // id is for which back-end engineer you have chosen.
 				boolean isFeDone = isFeDone(id);
 				
 				int outputId = frontendOutputID.get(id);
@@ -265,12 +261,11 @@ public class Task {
 				
 				if(!isFeDone) {
 					fillOutput( frontendPeopleDates.get(id), isFeDone, isBeTaskDone(frontendCurrentTask[id]), frontendTaskDoneOnDateMap,
-							backendTaskDoneOnDateMap, frontendWorkload, frontendCurrentTask, id, outputId, date, wholeFeCurr,
+							backendTaskDoneOnDateMap, frontendWorkload, frontendCurrentTask, id, outputId, date, frontendSpecializationPosition,
 							backlogFrontend, backlogQuality, isFrontendBusy, false, output);
 				}
 				else output[outputId][date] += "Spare 8hr day";
 			}
-			
 			// For Quality 
 			for(int id=0; id<totalQAPeople; id++) {
 				boolean isQaDone = isQaDone(id);
@@ -284,7 +279,7 @@ public class Task {
 				
 				if(!isQaDone) {
 					fillOutput( QAPeopleDates.get(id), isQaDone, isFeTaskDone(QACurrentTask[id]), QATaskDoneOnDateMap, frontendTaskDoneOnDateMap,
-							QAWorkload, QACurrentTask, id, outputId, date, wholeQaCurr, backlogQuality, backlogSample, isQualityBusy, false, output);
+							QAWorkload, QACurrentTask, id, outputId, date, QASpecializationPosition, backlogQuality, backlogSample, isQualityBusy, false, output);
 				}
 				else output[outputId][date] += "Spare 8hr day";
 			}
@@ -311,7 +306,7 @@ public class Task {
 		
 	}
 	
-	public static boolean de(boolean personIsBackend, boolean isPreviousEngineerDone, HashMap<Integer, int[]> previousEngineerMap
+	public static boolean isWorkDoneOnSameDayFunction(boolean personIsBackend, boolean isPreviousEngineerDone, HashMap<Integer, int[]> previousEngineerMap
 			, int[] currentEngineerTask, int halfDay, int id, int date) {
 		boolean isWorkDoneOnSameDay = true;
 		if(personIsBackend) {
@@ -332,11 +327,11 @@ public class Task {
 	}
 
 	public static void fillOutput( ArrayList<Integer> engineerDatesSchedule, boolean isCurrentEngineerDone, boolean isPreviousEngineerDone, HashMap<Integer, int[]> currentEngineerMap, 
-			HashMap<Integer, int[]> previousEngineerMap, int[] workload, int[] currentEngineerTask, int id, int outputId, int date, int[] wholeErCurr, 
+			HashMap<Integer, int[]> previousEngineerMap, int[] workload, int[] currentEngineerTask, int id, int outputId, int date, int[] currentSpecializationPosition, 
 			ArrayList<Integer> backlog, ArrayList<Integer> backlogOfNextEngineer, boolean[] isEngineerBusy, boolean personIsBackend, String[][] output) {
 		
 		// ALL(BE, FE, QA);
-		int spareHour = 0; // for calculation of spare hours of the engineer
+		int spareHour = 0; // for calculation of spare hours of the engineer.
 		
 		String[] workForDay = new String[]{"", ""};
 		
@@ -345,8 +340,8 @@ public class Task {
 			if(!isCurrentEngineerDone) {
 				
 				if(!isEngineerBusy[id]) {
-					if(wholeErCurr[0]<backlog.size()) {
-						currentEngineerTask[id] = backlog.get(wholeErCurr[0]++); // wholecurr is the pointer which maintains pointer to backlog
+					if(currentSpecializationPosition[0]<backlog.size()) {
+						currentEngineerTask[id] = backlog.get(currentSpecializationPosition[0]++); // wholecurr is the pointer which maintains pointer to backlog
 						isEngineerBusy[id] = true;
 					}
 					else {
@@ -355,7 +350,7 @@ public class Task {
 					}
 					
 					// for task done on same day or not by previous engineer 
-					boolean isWorkDoneOnSameDay = de(personIsBackend, isPreviousEngineerDone, previousEngineerMap
+					boolean isWorkDoneOnSameDay = isWorkDoneOnSameDayFunction(personIsBackend, isPreviousEngineerDone, previousEngineerMap
 							, currentEngineerTask, halfDay, id, date);
 					// check for isPrevWorkDoneOnSameDay
 					if(isWorkDoneOnSameDay) {
@@ -364,7 +359,7 @@ public class Task {
 					}
 				}
 				else {
-					boolean isWorkDoneOnSameDay = de(personIsBackend, isPreviousEngineerDone, previousEngineerMap
+					boolean isWorkDoneOnSameDay = isWorkDoneOnSameDayFunction(personIsBackend, isPreviousEngineerDone, previousEngineerMap
 							, currentEngineerTask, halfDay, id, date);
 					if(isWorkDoneOnSameDay) { // check for isPrevWorkDoneOnSameDay
 						spareHour += 4;
@@ -381,8 +376,8 @@ public class Task {
 					
 					currentEngineerMap.put(currentEngineerTask[id], new int[]{date, halfDay}); // adding the dates when task is done
 					
-					if(wholeErCurr[0] >= backlog.size()) {
-						currentEngineerTask[id] = wholeErCurr[0];
+					if(currentSpecializationPosition[0] >= backlog.size()) {
+						currentEngineerTask[id] = currentSpecializationPosition[0];
 					}
 					isEngineerBusy[id] = false; // making person free
 				}
@@ -391,7 +386,6 @@ public class Task {
 				spareHour += 4;
 			}
 		}
-		
 //		OUTPUT FILLING
 		// leave 
 		if(engineerDatesSchedule.get(date) == 0) output[outputId][date] += "Not Available";
@@ -402,13 +396,10 @@ public class Task {
 			output[outputId][date] += (workForDay[0]);
 			if(workForDay[0]=="") output[outputId][date] += "Spare 4 hr day : " + workForDay[1];
 			else output[outputId][date] += " : Spare " + spareHour + "hr day";
-			
 		}
 		else {
 			if(workForDay[0].equals(workForDay[1])) output[outputId][date] += (workForDay[0]);
 			else output[outputId][date] += (workForDay[0]+ " : " + workForDay[1]);
-		}
-		
+		}	
 	}
-
 }
