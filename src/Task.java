@@ -3,8 +3,10 @@ import java.util.HashMap;
 import java.util.ArrayList;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class Task {
@@ -244,6 +246,7 @@ public class Task {
 			
 			outputString.add(name + ", " + specialization + ", " + string1);
 		}
+		writingOutput(outputString);
 		for(String s : outputString)
 			System.out.println(s);
 		
@@ -312,8 +315,8 @@ public class Task {
 	public static ArrayList<String[]> tasksheet = new ArrayList();
 	
 	public static void readingInput() {
-		String workloadCsvPath = "/Users/Sourav.Sharma/Downloads/Project_estimation.csv";
-		String tasksheetCsvPath ="/Users/Sourav.Sharma/Downloads/Tasksheet.csv";
+		String workloadCsvPath = "/Users/Gaurav.Sharma01/Downloads/Project_estimation.csv";
+		String tasksheetCsvPath ="/Users/Gaurav.Sharma01/Downloads/Tasksheet.csv";
 		
 		String workloadString = "";
 		String tasksheetString = "";
@@ -339,6 +342,22 @@ public class Task {
 		} catch(IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+	
+	public static void writingOutput(ArrayList<String> output) {
+		String fileName = "/Users/Gaurav.Sharma01/Downloads/Output.csv";
+		try {
+			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(fileName));
+			for(String line : output) {
+				bufferedWriter.write(line);
+				bufferedWriter.newLine();
+			}
+			bufferedWriter.close();
+		}
+		catch(IOException ex) {
+			System.out.println("Error in writing the file");
+			ex.printStackTrace();
 		}
 	}
 	
