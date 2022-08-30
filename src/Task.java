@@ -302,7 +302,6 @@ public class Task {
 		writingOutput(outputString);
 		for(String s : outputString)
 			System.out.println(s);
-		for(int key : backendMap.keySet()) System.out.println(key + " " + Arrays.toString(backendMap.get(key)));
 		
 	}
 
