@@ -8,6 +8,10 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class Task {
+	public static ArrayList<ArrayList<Integer>> backendPeopleDates, frontendPeopleDates, QAPeopleDates;
+	
+	public static ArrayList<String> taskName = new ArrayList();
+	
 	public static boolean notAddedFeBacklog = true;
 	public static boolean notAddedQaBacklog = true;
 
@@ -26,143 +30,175 @@ public class Task {
 	public static HashMap<Integer, Integer> qualityMap = new HashMap<>();
 	
 	// pointer which will tell us about which person is doing which task currently. Integer not taken when passed to the function as it doesn't change the value of static Integer.
-	public static int[] beCurr = {0, 0, 0}, feCurr = {0, 0}, qaCurr = {0, 0};
+	public static int[] beCurr , feCurr , qaCurr;
 	public static int[]  wholeBeCurr = {0}, wholeFeCurr = {0}, wholeQaCurr = {0}; // total be people
 	
-	public static int[] beWork = {4, 3, 2};
-	public static int[] feWork = {3, 4, 3};
-	public static int[] qaWork = {2, 2, 1};
+	public static int[] backendWorkload;
+	public static int[] frontendWorkload;
+	public static int[] QAWorkload;
 	
-//	public static ArrayList<Integer> backendWorkload, frontendWorkload, QAWorkload;
-	
-	public static String[] tasks = {"Hero Banner   "   , "Featured News ", "Contact Us    "};
-	
-//	public static ArrayList<String> taskName = new ArrayList();
-
 	// Indices
 	// 0 -> Hero banner
 	// 1 -> News
 	// 2 -> Contact us
 	
-//	public static ArrayList<ArrayList<Integer>> allEngineerDates = new ArrayList();
-																														
-	public static int[] beDates =  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	public static int[] be2Dates = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	public static int[] be3Dates =  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+	public static String[][] output; // output
 	
-	public static int[] feDates =  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	public static int[] fe2Dates = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	
-	public static int[] qaDates =  {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	public static int[] qa2Dates =  {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	
-	public static int[][] allbeDates = {beDates, be2Dates, be3Dates}, allfeDates = {feDates, fe2Dates}, allqaDates = {qaDates, qa2Dates};
-	
-	
-	public static String[][] output = new String[7][beDates.length]; // output
-	
-	public static boolean[] isBackendBusy = {false, false, false};
-	public static boolean[] isFrontendBusy = {false, false};
-	public static boolean[] isQualityBusy = {false, false};
+	public static boolean[] isBackendBusy;
+	public static boolean[] isFrontendBusy;
+	public static boolean[] isQualityBusy;
 
 	
 	// methods
 	
 	public static boolean isBeDone(int beId) {
-		if(beCurr[beId] >= beWork.length) return true;
+		if(beCurr[beId] >= backendWorkload.length) return true;
 		return false;
 	}
 	
 	public static boolean isFeDone(int feId) {
-		if(feCurr[feId] >= feWork.length) return true;
+		if(feCurr[feId] >= frontendWorkload.length) return true;
 		return false;
 	}
 	
 	public static boolean isQaDone(int qaId) {
-		if(qaCurr[qaId] >= qaWork.length) return true;
+		if(qaCurr[qaId] >= QAWorkload.length) return true;
 		return false;
 	}
 	
 	//
 	public static boolean isBeTaskDone(int task) {
-		if(beWork[task] == 0) return true;
+		if(backendWorkload[task] == 0) return true;
 		return false;
 	}
 	
 	public static boolean isFeTaskDone(int task) {
-		if(feWork[task] == 0) return true;
+		if(frontendWorkload[task] == 0) return true;
 		return false;
 	}
 	
 	public static String addOutput(int task) {
-		return tasks[task];
+		return taskName.get(task);
 	}
 	
 	// main
 	
 	public static void main(String[] args) {
 		// buffer input
-//		readingInput();
+		readingInput();
 		
-		backlogBackend.add(0);
-		backlogBackend.add(1);
-		backlogBackend.add(2);
+		backendWorkload = new int[workloadSheet.size()-1];
+		frontendWorkload = new int[workloadSheet.size()-1];
+		QAWorkload = new int[workloadSheet.size()-1];
 		
-//		backendWorkload = new ArrayList();
-//		QAWorkload = new ArrayList();
-//		frontendWorkload = new ArrayList();
-//		
-//		for(int i = 1; i < workloadSheet.size(); i++) {
-//			for(int j = 1; j < workloadSheet.get(i).length; j++) {
-//				if(j==1) taskName.add(workloadSheet.get(i)[j]);
-//				else if(j==2) backendWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
-//				else if(j==3) frontendWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
-//				else if(j==4) QAWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
-//			}
-//		}
-//		
-//		allEngineerDates.add(new ArrayList<Integer>)
-//		
-//		for(int i = 1; i < tasksheet.size(); i++) {
-//			tasksheet.get(1)[1]
-//			for(int j = 1; j < tasksheet.get(i).length; j++) {
-//				if(j==1) taskName.add(workloadSheet.get(i)[j]);
-//				else if(j==2) backendWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
-//				else if(j==3) frontendWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
-//				else if(j==4) QAWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
-//			}
-//		}
+		// work-sheet input
+		for(int i = 1; i < workloadSheet.size(); i++) {
+			taskName.add(workloadSheet.get(i)[1]);
+			for(int j = 2; j < workloadSheet.get(i).length; j++) {
+				if(j==2) {
+					backendWorkload[i-1] = Integer.parseInt(workloadSheet.get(i)[j]);
+				}
+				else if(j==3) {
+					frontendWorkload[i-1] = Integer.parseInt(workloadSheet.get(i)[j]);
+				}
+				else if(j==4) {
+					QAWorkload[i-1] = Integer.parseInt(workloadSheet.get(i)[j]);
+				}
+			}
+		}
 		
+
+		ArrayList<Integer> backendOutputID = new ArrayList();
+		ArrayList<Integer> frontendOutputID = new ArrayList();
+		ArrayList<Integer> QAOutputID = new ArrayList();
 		
-//		0 is for Hero Banner
-//		1 is for Featured News
-//		2 is for Contact Us
+		// dates input
+		// index 0 => BE, 1 => FE, 2 => QA
+		backendPeopleDates = new ArrayList<ArrayList<Integer>>();
+		frontendPeopleDates = new ArrayList<ArrayList<Integer>>();
+		QAPeopleDates = new ArrayList<ArrayList<Integer>>();
 		
-//		workloadSheet
+		HashMap<Integer, String[]> namesAndIDMap = new HashMap<>();
 		
-		for(int date=0; date<beDates.length; date++) {
+		String string1 = Arrays.toString(tasksheet.get(0));
+		string1 = string1.substring(1, string1.length()-1);
+		
+		int outputTestID = 0;
+		for(int i = 1; i < tasksheet.size(); i++) {
+			ArrayList<ArrayList<Integer>> hi = new ArrayList<ArrayList<Integer>>();
 			
+			if(tasksheet.get(i)[1].equals("BE")) {
+				hi = backendPeopleDates;
+				namesAndIDMap.put(outputTestID, new String[] {tasksheet.get(i)[0], "BE"});
+				backendOutputID.add(outputTestID++);
+			}
+			
+			else if(tasksheet.get(i)[1].equals("FE")) { 
+				hi = frontendPeopleDates;
+				namesAndIDMap.put(outputTestID, new String[] {tasksheet.get(i)[0], "FE"});
+				frontendOutputID.add(outputTestID++);
+			}
+			
+			else if(tasksheet.get(i)[1].equals("QA")) {
+				hi = QAPeopleDates;
+				namesAndIDMap.put(outputTestID, new String[] {tasksheet.get(i)[0], "QA"});
+				QAOutputID.add(outputTestID++);
+			}
+			
+			ArrayList<Integer> insideEngineer = new ArrayList();
+			
+			for(int j = 2; j < tasksheet.get(i).length; j++) {
+				insideEngineer.add(Integer.parseInt(tasksheet.get(i)[j]));
+			}
+			hi.add(insideEngineer);
+		}
+		
+
+		
+		int totalBackendPeople = backendPeopleDates.size();
+		int totalFrontendPeople = frontendPeopleDates.size();
+		int totalQAPeople = QAPeopleDates.size();
+		
+		int totalPeople = totalBackendPeople + totalFrontendPeople + totalQAPeople;
+		
+		beCurr = new int[totalBackendPeople];
+		feCurr = new int[totalFrontendPeople];
+		qaCurr = new int[totalQAPeople];
+		
+		// busy or not at specific time
+		isBackendBusy = new boolean[totalBackendPeople];
+		isFrontendBusy = new boolean[totalFrontendPeople];
+		isQualityBusy = new boolean[totalQAPeople];
+		
+		int totalNumberOfDates = backendPeopleDates.get(0).size();
+		
+		output = new String[totalPeople][totalNumberOfDates];
+		
+		// back-end backlog
+		for(int i=0; i<taskName.size(); i++) {
+			backlogBackend.add(i);
+		}
+//		
+		for(int date=0; date<totalNumberOfDates; date++) {
 			// For Back-end
-			for(int id=0; id<allbeDates.length; id++) {
+			for(int id=0; id<totalBackendPeople; id++) {
 				boolean isBeDone = isBeDone(id);
 				
-				int outputId = 0; 
-				if(id == 1) outputId = 1;
-				else if(id == 2) outputId = 6;// erId for output
+				int outputId = backendOutputID.get(id);
+				
 				
 				if(!isBeDone) {
-					fillOutput( allbeDates[id], isBeDone, true /* because nothing previous */, backendMap, backendGarbageMap, beWork, beCurr,
-							id, outputId /* for FE outputArray */, date, wholeBeCurr, backlogBackend, backlogFrontend, isBackendBusy);
+					fillOutput( backendPeopleDates.get(id), isBeDone, true /* because nothing previous */, backendMap, backendGarbageMap, backendWorkload, beCurr,
+							id, outputId /* for FE outputArray */, date, wholeBeCurr, backlogBackend, backlogFrontend, isBackendBusy, true);
 				}
-				else output[outputId][date] = "Spare day     ";
+				else output[outputId][date] = "Spare day";
 			}
 			
 			// For Front-end
-			for(int id=0; id<allfeDates.length; id++) {
+			for(int id=0; id<totalFrontendPeople; id++) {
 				boolean isFeDone = isFeDone(id);
 				
-				int outputId = 2; 
-				if(id != 0) outputId = 3; // erId for output
+				int outputId = frontendOutputID.get(id);
 				
 				if(backlogFrontend.size() != 0 && notAddedFeBacklog) {
 					notAddedFeBacklog = false;
@@ -170,18 +206,17 @@ public class Task {
 				}
 				
 				if(!isFeDone) {
-					fillOutput( allfeDates[id], isFeDone, isBeTaskDone(feCurr[id]), frontendMap, backendMap, feWork, feCurr,
-							id, outputId, date, wholeFeCurr, backlogFrontend, backlogQuality, isFrontendBusy);
+					fillOutput( frontendPeopleDates.get(id), isFeDone, isBeTaskDone(feCurr[id]), frontendMap, backendMap, frontendWorkload, feCurr,
+							id, outputId, date, wholeFeCurr, backlogFrontend, backlogQuality, isFrontendBusy, false);
 				}
 				else output[outputId][date] = "Spare day     ";
 			}
 			
 			// For Quality 
-			for(int id=0; id<allqaDates.length; id++) {
+			for(int id=0; id<totalQAPeople; id++) {
 				boolean isQaDone = isQaDone(id);
 				
-				int outputId = 4; 
-				if(id != 0) outputId = 5; // erId for output
+				int outputId = QAOutputID.get(id);
 				
 				if(backlogQuality.size() != 0 && notAddedQaBacklog) {
 					notAddedQaBacklog = false;
@@ -189,35 +224,38 @@ public class Task {
 				}
 				
 				if(!isQaDone) {
-					fillOutput( allqaDates[id], isQaDone, isFeTaskDone(qaCurr[id]), qualityMap, frontendMap, qaWork, qaCurr,
-							id, outputId, date, wholeQaCurr, backlogQuality, backlogSample, isQualityBusy);
+					fillOutput( QAPeopleDates.get(id), isQaDone, isFeTaskDone(qaCurr[id]), qualityMap, frontendMap, QAWorkload, qaCurr,
+							id, outputId, date, wholeQaCurr, backlogQuality, backlogSample, isQualityBusy, false);
 				}
-				else output[outputId][date] = "Spare day     ";
+				else output[outputId][date] = "Spare day";
 			}
 		}
 		
-		System.out.println("BE0: " + Arrays.toString(output[0]));
-		System.out.println("BE1: " + Arrays.toString(output[1]));
-		System.out.println("BE2: " + Arrays.toString(output[6]) + "\n");
+		ArrayList<String> outputString = new ArrayList();
+		outputString.add(string1);
 		
-		
-		System.out.println("FE0: " + Arrays.toString(output[2]));
-		System.out.println("FE1: " + Arrays.toString(output[3]) + "\n");
-		
-		System.out.println("QA0: " + Arrays.toString(output[4]));
-		System.out.println("QA1: " + Arrays.toString(output[5]) + "\n");
-
-//		
+		for(int index = 0; index < output.length; index++) {
+			String[] outputt = output[index];
+			string1 = Arrays.toString(outputt);
+			string1 = string1.substring(1, string1.length()-1);
+			
+			String name = namesAndIDMap.get(index)[0];
+			String specialization = namesAndIDMap.get(index)[1];
+			
+			outputString.add(name + ", " + specialization + ", " + string1);
+		}
+		for(String s : outputString)
+			System.out.println(s);
 		
 		
 	}
-	
-	public static void fillOutput( int[] erDates, boolean isCurrentEngineerDone, boolean isPreviousEngineerDone, HashMap<Integer, Integer> currentEngineerMap, 
+
+	public static void fillOutput( ArrayList<Integer> erDates, boolean isCurrentEngineerDone, boolean isPreviousEngineerDone, HashMap<Integer, Integer> currentEngineerMap, 
 			HashMap<Integer, Integer> previousEngineerMap, int[] erWork, int[] currentEngineerTask, int id, int outputId, int date, int[] wholeErCurr, 
-			ArrayList<Integer> backlog, ArrayList<Integer> backlogOfNextEngineer, boolean[] isEngineerBusy) {
+			ArrayList<Integer> backlog, ArrayList<Integer> backlogOfNextEngineer, boolean[] isEngineerBusy, boolean personIsBackend) {
 		
 		// ALL(BE, FE, QA);
-		if(erDates[date] == 1) {
+		if(erDates.get(date) == 1) {
 			if(!isCurrentEngineerDone) {
 				
 				if(!isEngineerBusy[id]) {
@@ -226,13 +264,13 @@ public class Task {
 						isEngineerBusy[id] = true;
 					}
 					else {
-						output[outputId][date] = "Spare day     ";
+						output[outputId][date] = "Spare day";
 						return;
 					}
 					
 					// for task done on same day or not by previous engineer 
 					boolean isWorkDoneOnSameDay = true;
-					if(outputId == 0 || outputId == 1 || outputId == 6) {
+					if(personIsBackend) {
 						isWorkDoneOnSameDay = false; // because of be, as it's not dependent on any other
 					}
 					else if(isPreviousEngineerDone && previousEngineerMap.get(currentEngineerTask[id]) != date) {
@@ -240,7 +278,7 @@ public class Task {
 					}
 					// check for isPrevWorkDoneOnSameDay
 					if(isWorkDoneOnSameDay) {
-						output[outputId][date] = "Spare day     ";
+						output[outputId][date] = "Spare day";
 						return;
 					}
 				}
@@ -261,11 +299,11 @@ public class Task {
 				}
 
 			} else {
-				output[outputId][date] = "Spare day     ";
+				output[outputId][date] = "Spare day";
 			}						
 		} else {
 			// leave 
-			output[outputId][date] = "Not Avail     ";
+			output[outputId][date] = "Not Available";
 		}
 		
 	}
