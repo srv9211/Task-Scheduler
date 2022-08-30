@@ -10,18 +10,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class Task {
-	public static ArrayList<ArrayList<Integer>> backendPeopleDates, frontendPeopleDates, QAPeopleDates;
 	
 	// Indices are tasks
 	public static ArrayList<String> taskName = new ArrayList();
 	
 	public static boolean notAddedFeBacklog = true;
 	public static boolean notAddedQaBacklog = true;
-	
-	public static ArrayList<Integer> backlogBackend = new ArrayList();
-	public static ArrayList<Integer> backlogFrontend = new ArrayList();
-	public static ArrayList<Integer> backlogQuality = new ArrayList();
-	public static ArrayList<Integer> backlogSample = new ArrayList();
 	
 	// garbage map for previous work for back-end which will never come to use as there was no previous work for be
 	public static HashMap<Integer, int[]> backendGarbageMap = new HashMap<>();
@@ -131,6 +125,12 @@ public class Task {
 		// buffer input
 		readingInput();
 		
+
+		ArrayList<Integer> backlogBackend = new ArrayList();
+		ArrayList<Integer> backlogFrontend = new ArrayList();
+		ArrayList<Integer> backlogQuality = new ArrayList();
+		ArrayList<Integer> backlogSample = new ArrayList();
+		
 		backendWorkload = new int[workloadSheet.size()-1];
 		frontendWorkload = new int[workloadSheet.size()-1];
 		QAWorkload = new int[workloadSheet.size()-1];
@@ -156,9 +156,9 @@ public class Task {
 		
 		// dates input
 		// index 0 => BE, 1 => FE, 2 => QA
-		backendPeopleDates = new ArrayList<ArrayList<Integer>>();
-		frontendPeopleDates = new ArrayList<ArrayList<Integer>>();
-		QAPeopleDates = new ArrayList<ArrayList<Integer>>();
+		ArrayList<ArrayList<Integer>> backendPeopleDates = new ArrayList();
+		ArrayList<ArrayList<Integer>> frontendPeopleDates = new ArrayList();
+		ArrayList<ArrayList<Integer>> QAPeopleDates = new ArrayList();
 		
 		HashMap<Integer, String[]> namesAndIDMap = new HashMap<>();
 		
@@ -166,34 +166,42 @@ public class Task {
 		string1 = string1.substring(1, string1.length()-1);
 		
 		int outputTestID = 0;
-		for(int i = 1; i < tasksheet.size(); i++) {
-			ArrayList<ArrayList<Integer>> hi = new ArrayList<ArrayList<Integer>>();
-			
-			if(tasksheet.get(i)[1].equals("BE")) {
-				hi = backendPeopleDates;
-				namesAndIDMap.put(outputTestID, new String[] {tasksheet.get(i)[0], "BE"});
-				backendOutputID.add(outputTestID++);
+		
+		try {
+			for(int i = 1; i < tasksheet.size(); i++) {
+				ArrayList<ArrayList<Integer>> hi = new ArrayList();
+				
+				if(tasksheet.get(i)[1].equals("BE")) {
+					hi = backendPeopleDates;
+					namesAndIDMap.put(outputTestID, new String[] {tasksheet.get(i)[0], "BE"});
+					backendOutputID.add(outputTestID++);
+				}
+				
+				else if(tasksheet.get(i)[1].equals("FE")) { 
+					hi = frontendPeopleDates;
+					namesAndIDMap.put(outputTestID, new String[] {tasksheet.get(i)[0], "FE"});
+					frontendOutputID.add(outputTestID++);
+				}
+				
+				else if(tasksheet.get(i)[1].equals("QA")) {
+					hi = QAPeopleDates;
+					namesAndIDMap.put(outputTestID, new String[] {tasksheet.get(i)[0], "QA"});
+					QAOutputID.add(outputTestID++);
+				}
+				
+				ArrayList<Integer> insideEngineer = new ArrayList();
+				
+				for(int j = 2; j < tasksheet.get(i).length; j++) {
+					insideEngineer.add((int)(Float.parseFloat(tasksheet.get(i)[j])*2));
+				}
+				hi.add(insideEngineer);
 			}
-			
-			else if(tasksheet.get(i)[1].equals("FE")) { 
-				hi = frontendPeopleDates;
-				namesAndIDMap.put(outputTestID, new String[] {tasksheet.get(i)[0], "FE"});
-				frontendOutputID.add(outputTestID++);
-			}
-			
-			else if(tasksheet.get(i)[1].equals("QA")) {
-				hi = QAPeopleDates;
-				namesAndIDMap.put(outputTestID, new String[] {tasksheet.get(i)[0], "QA"});
-				QAOutputID.add(outputTestID++);
-			}
-			
-			ArrayList<Integer> insideEngineer = new ArrayList();
-			
-			for(int j = 2; j < tasksheet.get(i).length; j++) {
-				insideEngineer.add((int)(Float.parseFloat(tasksheet.get(i)[j])*2));
-			}
-			hi.add(insideEngineer);
 		}
+		catch(Exception e) {
+			System.err.println("Please provide the proper input in CSV format, null values won't be accepted and with proper data types.");
+			return;
+		}
+		
 
 		int totalBackendPeople = backendPeopleDates.size();
 		int totalFrontendPeople = frontendPeopleDates.size();
@@ -294,6 +302,7 @@ public class Task {
 		writingOutput(outputString);
 		for(String s : outputString)
 			System.out.println(s);
+		for(int key : backendMap.keySet()) System.out.println(key + " " + Arrays.toString(backendMap.get(key)));
 		
 	}
 
@@ -328,7 +337,8 @@ public class Task {
 					else if(isPreviousEngineerDone) {
 						if(previousEngineerMap.get(currentEngineerTask[id])[0] == date) {
 							if(previousEngineerMap.get(currentEngineerTask[id])[1] != halfDay) {
-								isWorkDoneOnSameDay = false; // because of previous		
+								if(halfDay > previousEngineerMap.get(currentEngineerTask[id])[1])
+									isWorkDoneOnSameDay = false; // because of previous		
 							}
 						}
 						else {
