@@ -2,6 +2,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ArrayList;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
 public class Task {
 	public static boolean notAddedFeBacklog = true;
 	public static boolean notAddedQaBacklog = true;
@@ -28,12 +33,18 @@ public class Task {
 	public static int[] feWork = {3, 4, 3};
 	public static int[] qaWork = {2, 2, 1};
 	
+//	public static ArrayList<Integer> backendWorkload, frontendWorkload, QAWorkload;
+	
 	public static String[] tasks = {"Hero Banner   "   , "Featured News ", "Contact Us    "};
+	
+//	public static ArrayList<String> taskName = new ArrayList();
 
 	// Indices
 	// 0 -> Hero banner
 	// 1 -> News
 	// 2 -> Contact us
+	
+//	public static ArrayList<ArrayList<Integer>> allEngineerDates = new ArrayList();
 																														
 	public static int[] beDates =  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 	public static int[] be2Dates = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
@@ -90,14 +101,44 @@ public class Task {
 	// main
 	
 	public static void main(String[] args) {
+		// buffer input
+//		readingInput();
 		
 		backlogBackend.add(0);
 		backlogBackend.add(1);
 		backlogBackend.add(2);
 		
+//		backendWorkload = new ArrayList();
+//		QAWorkload = new ArrayList();
+//		frontendWorkload = new ArrayList();
+//		
+//		for(int i = 1; i < workloadSheet.size(); i++) {
+//			for(int j = 1; j < workloadSheet.get(i).length; j++) {
+//				if(j==1) taskName.add(workloadSheet.get(i)[j]);
+//				else if(j==2) backendWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
+//				else if(j==3) frontendWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
+//				else if(j==4) QAWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
+//			}
+//		}
+//		
+//		allEngineerDates.add(new ArrayList<Integer>)
+//		
+//		for(int i = 1; i < tasksheet.size(); i++) {
+//			tasksheet.get(1)[1]
+//			for(int j = 1; j < tasksheet.get(i).length; j++) {
+//				if(j==1) taskName.add(workloadSheet.get(i)[j]);
+//				else if(j==2) backendWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
+//				else if(j==3) frontendWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
+//				else if(j==4) QAWorkload.add(Integer.parseInt(workloadSheet.get(i)[j]));
+//			}
+//		}
+		
+		
 //		0 is for Hero Banner
 //		1 is for Featured News
 //		2 is for Contact Us
+		
+//		workloadSheet
 		
 		for(int date=0; date<beDates.length; date++) {
 			
@@ -168,9 +209,10 @@ public class Task {
 
 //		
 		
+		
 	}
 	
-	public static void fillOutput( int[] erDates, boolean isCurrentEngineerDone, boolean isPrevErDone, HashMap<Integer, Integer> currentEngineerMap, 
+	public static void fillOutput( int[] erDates, boolean isCurrentEngineerDone, boolean isPreviousEngineerDone, HashMap<Integer, Integer> currentEngineerMap, 
 			HashMap<Integer, Integer> previousEngineerMap, int[] erWork, int[] currentEngineerTask, int id, int outputId, int date, int[] wholeErCurr, 
 			ArrayList<Integer> backlog, ArrayList<Integer> backlogOfNextEngineer, boolean[] isEngineerBusy) {
 		
@@ -193,7 +235,7 @@ public class Task {
 					if(outputId == 0 || outputId == 1 || outputId == 6) {
 						isWorkDoneOnSameDay = false; // because of be, as it's not dependent on any other
 					}
-					else if(isPrevErDone && previousEngineerMap.get(currentEngineerTask[id]) != date) {
+					else if(isPreviousEngineerDone && previousEngineerMap.get(currentEngineerTask[id]) != date) {
 						isWorkDoneOnSameDay = false; // because of previous
 					}
 					// check for isPrevWorkDoneOnSameDay
@@ -226,9 +268,40 @@ public class Task {
 			output[outputId][date] = "Not Avail     ";
 		}
 		
-	} 
+	}
+	
+	public static ArrayList<String[]> workloadSheet = new ArrayList();
+	public static ArrayList<String[]> tasksheet = new ArrayList();
+	
+	public static void readingInput() {
+		String workloadCsvPath = "/Users/Sourav.Sharma/Downloads/Project_estimation.csv";
+		String tasksheetCsvPath ="/Users/Sourav.Sharma/Downloads/Tasksheet.csv";
+		
+		String workloadString = "";
+		String tasksheetString = "";
+		
+		try {
+			BufferedReader bufferWorkload= new BufferedReader(new FileReader(workloadCsvPath));
+			BufferedReader bufferTasksheet= new BufferedReader(new FileReader(tasksheetCsvPath));
+			
+			while((workloadString = bufferWorkload.readLine()) != null){
+				// 18001020123
+				String[] values= workloadString.split(",");
+				workloadSheet.add(values);
+			}
+			
+			while((tasksheetString = bufferTasksheet.readLine()) != null){
+				String[] values= tasksheetString.split(",");
+				tasksheet.add(values);
+			}
+			
+		} catch(FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch(IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 }
-
-
-
