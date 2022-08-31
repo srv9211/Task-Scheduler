@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class Task {
+	// Indices are tasks
 	public static ArrayList<String> tasksName = new ArrayList();
 	
 	public static boolean notAddedFeBacklog = true;
@@ -31,15 +32,15 @@ public class Task {
 	public static int[] QAWorkload;
 
 	// METHODS==================================================================================
-	public static boolean isBeDone(int engineerID) {
+	public static boolean isBackendDone(int engineerID) {
 		if(backendCurrentTask[engineerID] >= backendWorkload.length) return true;
 		return false;
 	}
-	public static boolean isFeDone(int engineerID) {
+	public static boolean isFrontendDone(int engineerID) {
 		if(frontendCurrentTask[engineerID] >= frontendWorkload.length) return true;
 		return false;
 	}
-	public static boolean isQaDone(int engineerID) {
+	public static boolean isQADone(int engineerID) {
 		if(QACurrentTask[engineerID] >= QAWorkload.length) return true;
 		return false;
 	}
@@ -67,9 +68,9 @@ public class Task {
 		String tasksheetString = "";
 		
 		try {
-			BufferedReader buffworkloadload= new BufferedReader(new FileReader(workloadCsvPath));
+			BufferedReader bufferworkload= new BufferedReader(new FileReader(workloadCsvPath));
 			BufferedReader bufferTasksheet= new BufferedReader(new FileReader(tasksheetCsvPath));
-			while((workloadString = buffworkloadload.readLine()) != null){
+			while((workloadString = bufferworkload.readLine()) != null){
 				String[] values= workloadString.split(",");
 				workloadSheet.add(values);
 			}
@@ -138,49 +139,42 @@ public class Task {
 			System.err.println("Please provide the proper input in CSV format, null and negative values are not accepted.");
 			return;
 		}
-		
-		ArrayList<Integer> backendOutputID = new ArrayList();
-		ArrayList<Integer> frontendOutputID = new ArrayList();
-		ArrayList<Integer> QAOutputID = new ArrayList();
-		
 		// dates input
-		// index 0 => BE, 1 => FE, 2 => QA
 		ArrayList<ArrayList<Integer>> backendPeopleDates = new ArrayList();
 		ArrayList<ArrayList<Integer>> frontendPeopleDates = new ArrayList();
 		ArrayList<ArrayList<Integer>> QAPeopleDates = new ArrayList();
 		
 		HashMap<Integer, String[]> namesAndIDMap = new HashMap<>();
-		
-		String string1 = Arrays.toString(tasksheet.get(0));
-		string1 = string1.substring(1, string1.length()-1);
-		
-		int outputTestID = 0;
+
+		int outputID = 0; // for knowing the outputID at the time of output
+		ArrayList<Integer> backendOutputID = new ArrayList();// eg: back-end BE 0th person outputID. We'll know that which person has which output ID
+		ArrayList<Integer> frontendOutputID = new ArrayList();
+		ArrayList<Integer> QAOutputID = new ArrayList();
 		
 		try {
 			for(String nullTest : tasksheet.get(0)) if(nullTest.isEmpty()) throw new Exception("Null value.");
-			
 			for(int i = 1; i < tasksheet.size(); i++) {
 				ArrayList<ArrayList<Integer>> sameSpecializationEngineers = new ArrayList();
 				
 				String engineerName = tasksheet.get(i)[0];
 				if(engineerName.isEmpty()) throw new Exception("Null value.");
 				
-				if(tasksheet.get(i)[1].equals("BE")) {
+				if(tasksheet.get(i)[1].equals("BE")) { // for backend
 					sameSpecializationEngineers = backendPeopleDates;
-					namesAndIDMap.put(outputTestID, new String[] {engineerName, "BE"});
-					backendOutputID.add(outputTestID++);
+					namesAndIDMap.put(outputID, new String[] {engineerName, "BE"});
+					backendOutputID.add(outputID++);
 				}
 				
-				else if(tasksheet.get(i)[1].equals("FE")) { 
+				else if(tasksheet.get(i)[1].equals("FE")) { // for front-end
 					sameSpecializationEngineers = frontendPeopleDates;
-					namesAndIDMap.put(outputTestID, new String[] {engineerName, "FE"});
-					frontendOutputID.add(outputTestID++);
+					namesAndIDMap.put(outputID, new String[] {engineerName, "FE"});
+					frontendOutputID.add(outputID++);
 				}
 				
-				else if(tasksheet.get(i)[1].equals("QA")) {
+				else if(tasksheet.get(i)[1].equals("QA")) { // for QA
 					sameSpecializationEngineers = QAPeopleDates;
-					namesAndIDMap.put(outputTestID, new String[] {engineerName, "QA"});
-					QAOutputID.add(outputTestID++);
+					namesAndIDMap.put(outputID, new String[] {engineerName, "QA"});
+					QAOutputID.add(outputID++);
 				}
 				else throw new Exception("Not correct skill.");
 				
@@ -220,13 +214,10 @@ public class Task {
 		ArrayList<Integer> backlogQuality = new ArrayList();
 		ArrayList<Integer> backlogSample = new ArrayList();
 		
-		int totalNumberOfDates = backendPeopleDates.get(0).size();
-		
+		int totalNumberOfDates = backendPeopleDates.get(0).size(); // total no. of dates
 		String[][] output = new String[totalPeople][totalNumberOfDates];
-		
-		// fill output array with empty string
 		for(String[] empty : output) {
-			Arrays.fill(empty, "");
+			Arrays.fill(empty, "");	// // fill output array with empty string. why? because it was adding up null values.
 		}
 		
 		// back-end backlog
@@ -234,15 +225,15 @@ public class Task {
 			backlogBackend.add(i);
 		}
 		
-		for(int date=0; date<totalNumberOfDates; date++) {
+		for(int date=0; date<totalNumberOfDates; date++) { // Iterating every date
 			// For Back-end
 			for(int id=0; id<totalBackendPeople; id++) {
-				boolean isBeDone = isBeDone(id);
+				boolean isBackendDone = isBackendDone(id);
 				
 				int outputId = backendOutputID.get(id);
 				
-				if(!isBeDone) {
-					fillOutput( backendPeopleDates.get(id), isBeDone, true /* because nothing previous */, backendTaskDoneOnDateMap, backendGarbageMap, 
+				if(!isBackendDone) {
+					fillOutput( backendPeopleDates.get(id), isBackendDone, true /* because nothing previous */, backendTaskDoneOnDateMap, backendGarbageMap, 
 							backendWorkload, backendCurrentTask, id, outputId /* for FE outputArray */, date, backendSpecializationPosition, backlogBackend, 
 							backlogFrontend, isBackendBusy, true, output);
 				}
@@ -250,7 +241,7 @@ public class Task {
 			}
 			// For Front-end
 			for(int id=0; id<totalFrontendPeople; id++) { // id is for which back-end engineer you have chosen.
-				boolean isFeDone = isFeDone(id);
+				boolean isFrontendDone = isFrontendDone(id);
 				
 				int outputId = frontendOutputID.get(id);
 				
@@ -259,8 +250,8 @@ public class Task {
 					Arrays.fill(frontendCurrentTask, backlogFrontend.get(0));
 				}
 				
-				if(!isFeDone) {
-					fillOutput( frontendPeopleDates.get(id), isFeDone, isBeTaskDone(frontendCurrentTask[id]), frontendTaskDoneOnDateMap,
+				if(!isFrontendDone) {
+					fillOutput( frontendPeopleDates.get(id), isFrontendDone, isBeTaskDone(frontendCurrentTask[id]), frontendTaskDoneOnDateMap,
 							backendTaskDoneOnDateMap, frontendWorkload, frontendCurrentTask, id, outputId, date, frontendSpecializationPosition,
 							backlogFrontend, backlogQuality, isFrontendBusy, false, output);
 				}
@@ -268,7 +259,7 @@ public class Task {
 			}
 			// For Quality 
 			for(int id=0; id<totalQAPeople; id++) {
-				boolean isQaDone = isQaDone(id);
+				boolean isQADone = isQADone(id);
 				
 				int outputId = QAOutputID.get(id);
 				
@@ -277,26 +268,44 @@ public class Task {
 					Arrays.fill(QACurrentTask, backlogQuality.get(0));
 				}
 				
-				if(!isQaDone) {
-					fillOutput( QAPeopleDates.get(id), isQaDone, isFeTaskDone(QACurrentTask[id]), QATaskDoneOnDateMap, frontendTaskDoneOnDateMap,
+				if(!isQADone) {
+					fillOutput( QAPeopleDates.get(id), isQADone, isFeTaskDone(QACurrentTask[id]), QATaskDoneOnDateMap, frontendTaskDoneOnDateMap,
 							QAWorkload, QACurrentTask, id, outputId, date, QASpecializationPosition, backlogQuality, backlogSample, isQualityBusy, false, output);
 				}
 				else output[outputId][date] += "Spare 8hr day";
 			}
 		}
 		
+		String outputElements = Arrays.toString(tasksheet.get(0));
+		outputElements = outputElements.substring(1, outputElements.length()-1);
+		
 		ArrayList<String> outputString = new ArrayList();
-		outputString.add(string1);
+		outputString.add(outputElements);
 		
 		for(int index = 0; index < output.length; index++) {
 			String[] outputt = output[index];
-			string1 = Arrays.toString(outputt);
-			string1 = string1.substring(1, string1.length()-1);
+			outputElements = Arrays.toString(outputt);
+			outputElements = outputElements.substring(1, outputElements.length()-1);
 			
 			String engineerName = namesAndIDMap.get(index)[0];
 			String specialization = namesAndIDMap.get(index)[1];
 			
-			outputString.add(engineerName + ", " + specialization + ", " + string1);
+			outputString.add(engineerName + ", " + specialization + ", " + outputElements);
+		}
+		boolean allWorkDone = true;
+		for(int i=0; i<totalBackendPeople; i++) if(!isBackendDone(i)) allWorkDone = false;
+		for(int i=0; i<totalFrontendPeople; i++) if(!isFrontendDone(i)) allWorkDone = false;
+		for(int i=0; i<totalQAPeople; i++) if(!isQADone(i)) allWorkDone = false;
+		
+		try {
+			if(!allWorkDone) {
+				throw new Exception("Work not done.");
+			}
+		} catch(Exception e) {
+			System.err.println("Exception: ");
+			System.err.println("Given input of engineers were not able to complete the task by the provided time frame.");
+			System.err.println("Kindly provide the engineers with more availability.");
+			return;
 		}
 		
 		// OUTPUT
