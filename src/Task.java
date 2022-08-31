@@ -13,9 +13,6 @@ public class Task {
 	// Indices are tasks
 	public static ArrayList<String> tasksName = new ArrayList();
 	
-	public static boolean notAddedFeBacklog = true;
-	public static boolean notAddedQaBacklog = true;
-	
 	// garbage map for previous work for back-end which will never come to use as there was no previous work for be
 	public static HashMap<Integer, int[]> backendGarbageMap = new HashMap<>();
 	// maps for the record which task is done at which day, so that we know next person can't do the same task this day.
@@ -140,9 +137,9 @@ public class Task {
 			return;
 		}
 		// dates input
-		ArrayList<ArrayList<Integer>> backendPeopleDates = new ArrayList();
-		ArrayList<ArrayList<Integer>> frontendPeopleDates = new ArrayList();
-		ArrayList<ArrayList<Integer>> QAPeopleDates = new ArrayList();
+		ArrayList<ArrayList<Integer>> backendEngineersDates = new ArrayList();
+		ArrayList<ArrayList<Integer>> frontendEngineersDates = new ArrayList();
+		ArrayList<ArrayList<Integer>> QAEngineersDates = new ArrayList();
 		
 		HashMap<Integer, String[]> namesAndIDMap = new HashMap<>();
 
@@ -160,19 +157,19 @@ public class Task {
 				if(engineerName.isEmpty()) throw new Exception("Null value.");
 				
 				if(tasksheet.get(i)[1].equals("BE")) { // for backend
-					sameSpecializationEngineers = backendPeopleDates;
+					sameSpecializationEngineers = backendEngineersDates;
 					namesAndIDMap.put(outputID, new String[] {engineerName, "BE"});
 					backendOutputID.add(outputID++);
 				}
 				
 				else if(tasksheet.get(i)[1].equals("FE")) { // for front-end
-					sameSpecializationEngineers = frontendPeopleDates;
+					sameSpecializationEngineers = frontendEngineersDates;
 					namesAndIDMap.put(outputID, new String[] {engineerName, "FE"});
 					frontendOutputID.add(outputID++);
 				}
 				
 				else if(tasksheet.get(i)[1].equals("QA")) { // for QA
-					sameSpecializationEngineers = QAPeopleDates;
+					sameSpecializationEngineers = QAEngineersDates;
 					namesAndIDMap.put(outputID, new String[] {engineerName, "QA"});
 					QAOutputID.add(outputID++);
 				}
@@ -194,28 +191,31 @@ public class Task {
 			return;
 		}
 		
-		int totalBackendPeople = backendPeopleDates.size();
-		int totalFrontendPeople = frontendPeopleDates.size();
-		int totalQAPeople = QAPeopleDates.size();
+		int totalBackendEngineers = backendEngineersDates.size();
+		int totalFrontendEngineers = frontendEngineersDates.size();
+		int totalQAEngineers = QAEngineersDates.size();
 		
-		int totalPeople = totalBackendPeople + totalFrontendPeople + totalQAPeople;
+		int totalEngineers = totalBackendEngineers + totalFrontendEngineers + totalQAEngineers;
 		
-		backendCurrentTask = new int[totalBackendPeople];
-		frontendCurrentTask = new int[totalFrontendPeople];
-		QACurrentTask = new int[totalQAPeople];
+		backendCurrentTask = new int[totalBackendEngineers];
+		frontendCurrentTask = new int[totalFrontendEngineers];
+		QACurrentTask = new int[totalQAEngineers];
 		
 		// busy or not at specific time
-		boolean[] isBackendBusy = new boolean[totalBackendPeople];
-		boolean[] isFrontendBusy = new boolean[totalFrontendPeople];
-		boolean[] isQualityBusy = new boolean[totalQAPeople];
+		boolean[] isBackendBusy = new boolean[totalBackendEngineers];
+		boolean[] isFrontendBusy = new boolean[totalFrontendEngineers];
+		boolean[] isQualityBusy = new boolean[totalQAEngineers];
+		
+		boolean frontendBacklogIsEmpty = true; // check if there is any backlog availbale or not.
+		boolean QABacklogIsEmpty = true;
 			
 		ArrayList<Integer> backlogBackend = new ArrayList();
 		ArrayList<Integer> backlogFrontend = new ArrayList();
 		ArrayList<Integer> backlogQuality = new ArrayList();
 		ArrayList<Integer> backlogSample = new ArrayList();
 		
-		int totalNumberOfDates = backendPeopleDates.get(0).size(); // total no. of dates
-		String[][] output = new String[totalPeople][totalNumberOfDates];
+		int totalNumberOfDates = backendEngineersDates.get(0).size(); // total no. of dates
+		String[][] output = new String[totalEngineers][totalNumberOfDates];
 		for(String[] empty : output) {
 			Arrays.fill(empty, "");	// // fill output array with empty string. why? because it was adding up null values.
 		}
@@ -227,52 +227,52 @@ public class Task {
 		
 		for(int date=0; date<totalNumberOfDates; date++) { // Iterating every date
 			// For Back-end
-			for(int id=0; id<totalBackendPeople; id++) {
+			for(int id=0; id<totalBackendEngineers; id++) {
 				boolean isBackendDone = isBackendDone(id);
 				
 				int outputId = backendOutputID.get(id);
 				
 				if(!isBackendDone) {
-					fillOutput( backendPeopleDates.get(id), isBackendDone, true /* because nothing previous */, backendTaskDoneOnDateMap, backendGarbageMap, 
+					fillOutput( backendEngineersDates.get(id), isBackendDone, true /* because nothing previous */, backendTaskDoneOnDateMap, backendGarbageMap, 
 							backendWorkload, backendCurrentTask, id, outputId /* for FE outputArray */, date, backendSpecializationPosition, backlogBackend, 
 							backlogFrontend, isBackendBusy, true, output);
 				}
-				else output[outputId][date] += "Spare 8hr day";
+				else output[outputId][date] += "8 Hr Spare";
 			}
 			// For Front-end
-			for(int id=0; id<totalFrontendPeople; id++) { // id is for which back-end engineer you have chosen.
+			for(int id=0; id<totalFrontendEngineers; id++) { // id is for which back-end engineer you have chosen.
 				boolean isFrontendDone = isFrontendDone(id);
 				
 				int outputId = frontendOutputID.get(id);
 				
-				if(backlogFrontend.size() != 0 && notAddedFeBacklog) { // notAdded is to fill the backlogs
-					notAddedFeBacklog = false;
+				if(backlogFrontend.size() != 0 && frontendBacklogIsEmpty) { // notAdded is to fill the backlogs
+					frontendBacklogIsEmpty = false;
 					Arrays.fill(frontendCurrentTask, backlogFrontend.get(0));
 				}
 				
 				if(!isFrontendDone) {
-					fillOutput( frontendPeopleDates.get(id), isFrontendDone, isBeTaskDone(frontendCurrentTask[id]), frontendTaskDoneOnDateMap,
+					fillOutput( frontendEngineersDates.get(id), isFrontendDone, isBeTaskDone(frontendCurrentTask[id]), frontendTaskDoneOnDateMap,
 							backendTaskDoneOnDateMap, frontendWorkload, frontendCurrentTask, id, outputId, date, frontendSpecializationPosition,
 							backlogFrontend, backlogQuality, isFrontendBusy, false, output);
 				}
-				else output[outputId][date] += "Spare 8hr day";
+				else output[outputId][date] += "8 Hr Spare";
 			}
 			// For Quality 
-			for(int id=0; id<totalQAPeople; id++) {
+			for(int id=0; id<totalQAEngineers; id++) {
 				boolean isQADone = isQADone(id);
 				
 				int outputId = QAOutputID.get(id);
 				
-				if(backlogQuality.size() != 0 && notAddedQaBacklog) { // notAdded is to fill the backlogs
-					notAddedQaBacklog = false;
+				if(backlogQuality.size() != 0 && QABacklogIsEmpty) { // notAdded is to fill the backlogs
+					QABacklogIsEmpty = false;
 					Arrays.fill(QACurrentTask, backlogQuality.get(0));
 				}
 				
 				if(!isQADone) {
-					fillOutput( QAPeopleDates.get(id), isQADone, isFeTaskDone(QACurrentTask[id]), QATaskDoneOnDateMap, frontendTaskDoneOnDateMap,
+					fillOutput( QAEngineersDates.get(id), isQADone, isFeTaskDone(QACurrentTask[id]), QATaskDoneOnDateMap, frontendTaskDoneOnDateMap,
 							QAWorkload, QACurrentTask, id, outputId, date, QASpecializationPosition, backlogQuality, backlogSample, isQualityBusy, false, output);
 				}
-				else output[outputId][date] += "Spare 8hr day";
+				else output[outputId][date] += "8 Hr Spare";
 			}
 		}
 		
@@ -292,13 +292,13 @@ public class Task {
 			
 			outputString.add(engineerName + ", " + specialization + ", " + outputElements);
 		}
-		boolean allWorkDone = true;
-		for(int i=0; i<totalBackendPeople; i++) if(!isBackendDone(i)) allWorkDone = false;
-		for(int i=0; i<totalFrontendPeople; i++) if(!isFrontendDone(i)) allWorkDone = false;
-		for(int i=0; i<totalQAPeople; i++) if(!isQADone(i)) allWorkDone = false;
+		boolean allWorkIsDone = true;
+		for(int i=0; i<totalBackendEngineers; i++) if(!isBackendDone(i)) allWorkIsDone = false;
+		for(int i=0; i<totalFrontendEngineers; i++) if(!isFrontendDone(i)) allWorkIsDone = false;
+		for(int i=0; i<totalQAEngineers; i++) if(!isQADone(i)) allWorkIsDone = false;
 		
 		try {
-			if(!allWorkDone) {
+			if(!allWorkIsDone) {
 				throw new Exception("Work not done.");
 			}
 		} catch(Exception e) {
@@ -310,6 +310,7 @@ public class Task {
 		
 		// OUTPUT
 		writingOutput(outputString);
+		
 		for(String s : outputString)
 			System.out.println(s);
 		
@@ -400,11 +401,11 @@ public class Task {
 		if(engineerDatesSchedule.get(date) == 0) output[outputId][date] += "Not Available";
 		else if(engineerDatesSchedule.get(date) == 1) workForDay[1] += "Not Avail";
 
-		if(spareHour == 8) output[outputId][date] += "Spare " + spareHour + "hr day";
+		if(spareHour == 8) output[outputId][date] +=  "8 Hr Spare";
 		else if(spareHour == 4){
 			output[outputId][date] += (workForDay[0]);
-			if(workForDay[0]=="") output[outputId][date] += "Spare 4 hr day : " + workForDay[1];
-			else output[outputId][date] += " : Spare " + spareHour + "hr day";
+			if(workForDay[0]=="") output[outputId][date] += "4 Hr Spare : " + workForDay[1];
+			else output[outputId][date] += " : " + spareHour + " Hr Spare";
 		}
 		else {
 			if(workForDay[0].equals(workForDay[1])) output[outputId][date] += (workForDay[0]);
